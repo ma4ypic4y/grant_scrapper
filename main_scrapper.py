@@ -1,21 +1,24 @@
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
-from time import sleep
 import json
 from selenium.webdriver.chrome.service import Service as ChromeService
 import os
 from tqdm import tqdm
 import time
 import uuid
+import re
+from natasha import AddrExtractor
+from natasha import MorphVocab
 
-import csv
+from geopy.geocoders import Nominatim
+
 from threading import Thread
-import threading
 
-def save_json(path, data):
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4,ensure_ascii=False)
+
+
+morph_vocab = MorphVocab()
+geolocator = Nominatim(user_agent="Tester")
 
 INT_FIELDS = ['ИНН','ОГРН']
 
@@ -36,6 +39,61 @@ INFO_DICT = {
     'Рейтинг заявки': 'application_rating',
 }
 
+# определение порядка запроса для поиска адреса
+IMP_1 = ['автономный округ', 'область','край','республика']
+IMP_2 = ['село', 'город','посёлок','пгт']
+
+
+def save_json(path, data):
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4,ensure_ascii=False)
+
+
+def get_data_from_dict(d: dict, key: str):
+    '''
+    читаем данные из словаря
+    если ключа нет, то возвращаем пустую строку
+    '''
+    return d.get(key) if d.get(key) else ''
+
+
+def get_addr_ent_query(s: str):
+    '''
+    извлевчение NER адреса из текста
+    формирование запроса для поиска координат
+    '''
+    address_extractor = AddrExtractor(morph_vocab)
+    out = {el.fact.type: el.fact.value for el in address_extractor(s)}
+
+    try:
+        region_type = list((set(out.keys()) & set(IMP_1)))[0]
+    except:
+        region_type = ''
+    try:
+        city_type = list((set(out.keys()) & set(IMP_2)))[0]
+    except:
+        city_type = ''
+
+    region = get_data_from_dict(out,region_type)
+    city = get_data_from_dict(out,city_type)
+
+    query = f'Россия {region} {city}'
+    query = re.sub(" +", " ", query)
+    return query
+
+
+def get_coords_from_query(addr: str):
+    '''
+    получение координат по адресу (сформированному запросу)
+    '''
+    location = geolocator.geocode(addr)
+    try:
+        location = geolocator.geocode(addr)
+        return location.latitude, location.longitude
+    except:
+        return None, None
+
+
 def get_num_pages(driver):
     '''
     получение количества страниц
@@ -43,6 +101,7 @@ def get_num_pages(driver):
     link_to_parse = driver.find_elements('xpath','//a[@class="pagination__link"]')
     num_of_pages = [int(link.text) for link in link_to_parse]
     return list(range(1, max(num_of_pages)+1))
+
 
 def save_page_to_json(data):
     '''
@@ -52,12 +111,14 @@ def save_page_to_json(data):
     with open(os.path.join(DATA_PATH,str(uuid.uuid4()))+'.json', mode='w', encoding='utf-8') as f:
         json.dump(data, f,indent=4,ensure_ascii=False)
 
+
 def get_row_from_page(driver):
     '''
     получение ссылок на гранты с определенной страницы
     '''
     rows = driver.find_elements('xpath', '//div[@class="table table--p-present table--projects"]/a')
     return [row.get_attribute('href') for row in rows]
+
 
 def get_data_from_row(driver, row):
     '''
@@ -109,6 +170,11 @@ def get_data_from_row(driver, row):
 
     data['addres'] = driver.find_element('xpath','//span[@class="winner__details-contacts-item"]').text
     data['summary'] = ' '.join(driver.find_element('xpath','//div[@id="winner-summary"]').text.split('\n')[1:])
+
+    addr_query = get_addr_ent_query(data['addres'])
+    print(addr_query)
+    data['latitude'], data['longitude'] = get_coords_from_query(addr_query)
+
     return data
 
 
@@ -127,9 +193,10 @@ def get_data_from_page(page):
     save_page_to_json(data)
 
 
+
 if __name__ == '__main__':
     export_data= []
-    number_of_threads = 14
+    number_of_threads = 2
 
     url_parse = 'https://xn--80afcdbalict6afooklqi5o.xn--p1ai/public/application/cards?page=1'
 
