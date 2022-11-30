@@ -1,0 +1,6 @@
+# python 3.8.15
+selenium
+webdriver_manager
+natasha
+geopy
+elasticsearch==7.17
