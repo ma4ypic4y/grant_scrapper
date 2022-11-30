@@ -16,7 +16,6 @@ from geopy.geocoders import Nominatim
 from threading import Thread
 
 
-
 morph_vocab = MorphVocab()
 geolocator = Nominatim(user_agent="Tester")
 
