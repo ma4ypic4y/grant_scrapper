@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 import json
 
-data_path = './data/test.json'
+data_path = './data/active_data.json'
 
 def read_json(filename):
 
