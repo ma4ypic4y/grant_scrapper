@@ -3,7 +3,7 @@ version: '3.7'
 services:
 
   elasticsearch:
-    image: elasticsearch:7.17.0
+    image: elasticsearch:8.5.0
     container_name: elasticsearch
     environment:
       - xpack.security.enabled=false
@@ -25,13 +25,30 @@ services:
 
   kibana:
     container_name: kibana
-    image: kibana:7.17.0
+    image: kibana:8.5.0
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
       - 5601:5601
     depends_on:
       - elasticsearch
+
+  selenium:
+    image: seleniarm/standalone-chromium:latest
+    ports:
+      - 4444:4444
+      - 7900:7900
+    restart: always
+    network_mode: bridge
+    shm_size: '2gb'
+
+  parser:
+    image: coord_parser
+    volumes:
+          - ${PWD}/../data:/app/data
+    network_mode: bridge
+    depends_on:
+      - selenium
 
 volumes:
   elasticsearch-data:
