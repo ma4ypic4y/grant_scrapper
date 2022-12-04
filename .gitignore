@@ -5,3 +5,5 @@
 /test.py
 /.ipynb_checkpoints
 /data
+config.yaml
+__pycache__
