@@ -1,0 +1,30 @@
+{
+    "settings": {
+        "index": {
+            "mapping":{"ignore_malformed":true}
+        }
+
+    },
+
+    "mappings":{
+        "properties":{
+            "date_of_submission": {
+                "type": "date",
+                "format": "dd.MM.yyyy"
+            },
+            "implementation_period_start": {
+                "type": "date",
+                "format": "dd.MM.yyyy"
+            },
+            "implementation_period_end": {
+                "type": "date",
+                "format": "dd.MM.yyyy"
+            },
+
+            "location": {
+                "type": "geo_point"
+                }
+        }
+    }
+
+}

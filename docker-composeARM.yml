@@ -34,7 +34,7 @@ services:
       - elasticsearch
 
   selenium:
-    image: selenium/standalone-chromium:latest
+    image: seleniarm/standalone-chromium:latest
     ports:
       - 4444:4444
       - 7900:7900
