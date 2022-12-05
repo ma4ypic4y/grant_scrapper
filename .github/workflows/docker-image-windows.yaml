@@ -1,0 +1,21 @@
+name: Docker Image CI Windows
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the coordinate_parser Docker image
+      run: cd coordinate_parser/ && docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      
+    - name: Build the grant_parser Docker image
+      run: cd grant_parser/ && docker build . --file Dockerfile --tag my-image-name:$(date +%s)
