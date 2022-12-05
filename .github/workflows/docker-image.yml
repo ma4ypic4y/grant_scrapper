@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the coordinate_parser Docker image
-      run: docker build . --file coordinate_parser/Dockerfile --tag my-image-name:$(date +%s)
+      run: cd coordinate_parser/ && docker build . --file Dockerfile --tag my-image-name:$(date +%s)
       
     - name: Build the grant_parser Docker image
-      run: docker build . --file grant_parser/Dockerfile --tag my-image-name:$(date +%s)
+      run: cd grant_parser/ && docker build . --file Dockerfile --tag my-image-name:$(date +%s)
