@@ -4,3 +4,4 @@ webdriver_manager
 natasha
 geopy
 elasticsearch==7.17
+pyyaml
