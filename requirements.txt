@@ -3,5 +3,7 @@ selenium
 webdriver_manager
 natasha
 geopy
+pandas
+beautifulsoup4
 elasticsearch==7.17
 pyyaml
