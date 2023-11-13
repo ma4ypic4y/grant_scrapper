@@ -1,6 +1,6 @@
 # python 3.8.15
-selenium
 webdriver_manager
+selenium
 natasha
 geopy
 pandas
